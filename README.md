@@ -1,7 +1,7 @@
 Public History
 --------------
 
-Makes it easy to publish your bash history line by line in real-time to a web server. Good for live tutorial sessions or other teaching.
+Makes it easy to publish your bash history line by line in real-time to a web server. Good for live tutorial sessions or other teaching. Note: works best if you have SSH key login to the server [like this](https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2).
 
 public-history is invoked with one command of this form
 ```bash
