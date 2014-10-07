@@ -1,0 +1,83 @@
+N_ARGS=3
+local_html_file="none"
+server_address="none"
+remote_html_file="none"
+error=0
+
+help() {
+	printf "\n"
+	printf "Usage: source enable_logging local_html_file> <server_address> \"<path_to_destination_html_on_server>\"\n" "$0"
+	printf "local_html_file: path to html file to append history commands before copy to server\n"
+	printf "server_address: the server where your web server runs\n"
+	printf "path_to_destination_html: path on the server to where you want the html file saved\n"
+	printf "Include your user name in the server_address if necessary, such as: myname@ser.ver.com\n"
+	printf "\n"
+	printf "Example: source enable_logging ~/index.html myserver.com \"~/web/index.html\""
+	printf "\n"
+}
+
+
+if [[ $# < $N_ARGS ]];
+then
+	help
+	error=1
+fi
+
+local_html_file=$1
+server_address=$2
+remote_html_file=$3
+
+if [ -z "$local_html_file" ] && [[ $error == 0 ]];
+then
+	help
+	error=1
+fi
+
+if [ -z "$server_address" ] && [[ $error == 0 ]];
+then
+	help
+	error=1
+fi
+
+if [ -z "$remote_html_file" ] && [[ $error == 0 ]];
+then
+	help
+	error=1
+fi
+
+# test existence of the html file
+if [ ! -f $local_html_file ] && [[ $error == 0 ]];
+then
+	printf "Local html file '%s' doesn't exist\n" "$local_html_file"
+	error=1
+fi
+
+# test file has html extension
+extension=${local_html_file##*.}
+if [[ "$extension" != "html" ]] && [[ $error == 0 ]];
+then
+	printf "HTML file does not have a standard html extension\n"
+	error=1
+fi
+
+# test server write access
+ssh -q $server_address exit
+if [[ $? > 0 ]] && [[ $error == 0 ]];
+then
+	printf "Server connection test failed: 'ssh %s'\n" "$server_address"
+	error=1
+fi
+
+if [[ $error == 0 ]];
+then
+	PROMPT_COMMAND_OLD=$PROMPT_COMMAND
+	PROMPT_COMMAND="history 1 | tee -a $local_html_file > /dev/null && chmod 644 $local_html_file && scp -p $local_html_file $server_address:$remote_html_file > /dev/null"
+fi
+unset local_html_file
+unset server_address
+unset remote_html_file
+unset N_ARGS
+#echo "export PROMPT_COMMAND_OLD"
+#export PROMPT_COMMAND_OLD
+#export PROMPT_COMMAND
+
